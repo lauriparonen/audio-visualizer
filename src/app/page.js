@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import styles from './page.module.css'
 import FrequencyCanvas from './Components/FrequencyCanvas/frequency-canvas.js'
+import ShaderCanvas from './Components/ShaderCanvas/shader-canvas.js'
 
 export default function Home() {
   return (
@@ -14,7 +15,7 @@ export default function Home() {
       </p>
 
     <div className="shader-canvas-container">
-        {/* <ShaderCanvas /> */}
+         <ShaderCanvas /> 
         
       </div>
 

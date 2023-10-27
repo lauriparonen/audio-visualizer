@@ -1,5 +1,5 @@
 /**
- * Component for the smaller canvas that displays the frequencies of the audio file
+ * Component for the smaller canvas that displays the frequencies of the audio file.
  * 
  * based on this tutorial:
  * https://www.telerik.com/blogs/adding-audio-visualization-react-app-using-web-audio-api
@@ -80,7 +80,8 @@ const FrequencyCanvas = (props) => {
             )}
             <canvas ref={canvasRef} id="freq-canvas" />
         </div>
-    )
+    );
+    
     };
 
 export default FrequencyCanvas;
