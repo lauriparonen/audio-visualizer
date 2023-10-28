@@ -2,25 +2,26 @@
  * @fileoverview visualizer-page.js - AudioVisualizerPage component
  * Parent of FrequencyCanvas and ShaderCanvas
  * 
- * todo: fix cross-component file handling:
- * feed the same file to both canvases
- * so they will visualize the same audio file in unison 
- * in their own ways.
- * This could be done with useContext, but for now 
- * I'll try doing it through passing props down the tree.
- * forwardRef() might be useful here.
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, forwardRef } from 'react';
 import FrequencyCanvas from './FrequencyCanvas/frequency-canvas';
 import ShaderCanvas from './ShaderCanvas/shader-canvas';
 
 const AudioVisualizerPage = () => {
   const [file, setFile] = useState(null);
 
-  const audioRef = useRef(null);
+  const onChangeFile = (e) => {
+    setFile(e.target.files[0]);
+  };
 
-    
+  file && console.log('file: ', file);
+
+  // Create a reference to the audio element, 
+  // which will be used to play the selected file
+  // This is passed to the child components
+  // as a prop, so they can play the same audio
+  const audioRef = useRef(null);
 
   // When a file is selected, pass it to both canvases
   return (
@@ -28,36 +29,21 @@ const AudioVisualizerPage = () => {
       <input
         type="file"
         accept="audio/*"
-        onChange={
-          ({ target: { files } }) => {
-            files[0] && setFile(files[0]);
-          }
-        }
-        // debug 
-        //onInput={console.log('input')}
-        
+        onChange={onChangeFile}        
       />
-      {/*
       {file && (
-        <audio
-          ref={audioRef}
-          onPlay={handleAudioPlay}
-          onPause={handleAudioPause}
-          controls
-          src={window.URL.createObjectURL(file)}
-        />
-      )}
-      */}
       <FrequencyCanvas 
         file={file} 
         audioRef={audioRef}
-        onPlay={FrequencyCanvas.handleAudioPlay}
+        src={window.URL.createObjectURL(file)}
+        //onPlay={() => audioRef.current.play()}
         />
+      )}
       {/* 
       <ShaderCanvas 
         file={file} 
-        onSelectFile={handleFileSelect}
-        audioRef={audioRef} />
+        audioRef={audioRef}
+        src={window.URL.createObjectURL(file)}
       */}
     </div>
   );

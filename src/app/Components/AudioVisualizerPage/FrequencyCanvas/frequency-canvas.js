@@ -11,30 +11,32 @@
 import React, { useRef, useEffect, forwardRef } from "react";
 import styles from "./styles.css"
 
-let animationController;
+let animationController; 
 
-// todo: inherit the props from the parent component
-
-const FrequencyCanvas = ({ 
-    file, 
-    audioRef,
-    onPlay,
-    src
- }) => {
+const FrequencyCanvas = ( props ) => {
     const canvasRef = useRef(null);
     //const audioRef = useRef(null);
     const source = useRef(null);
-    const analyzer = useRef(null);
+    const analyzer = useRef(null);  
+
+    const file = props.file;
+    const audioRef = props.audioRef;
+    const onPlay = props.onPlay;
+    const onPause = props.onPause;
+    const src = props.src;
 
 
     const handleAudioPlay = () => {
         const audioContext = new AudioContext();
+        console.log("audioContext created");
             if (!source.current) {
+                console.log("source.current not found, creating");
                 source.current = audioContext.createMediaElementSource(audioRef.current);
                 analyzer.current = audioContext.createAnalyser();
                 source.current.connect(analyzer.current);
                 analyzer.current.connect(audioContext.destination);
             }
+            console.log("visualizeData() called");
             visualizeData();
         };
 
@@ -73,7 +75,12 @@ const FrequencyCanvas = ({
 
     return (
         <div className="freq-canvas">
-            <audio ref={audioRef} onPlay={handleAudioPlay} controls />
+            <audio 
+                ref={audioRef}
+                onPlay={handleAudioPlay}
+                src={src}
+                controls
+                 />
             <canvas ref={canvasRef} id="freq-canvas" />
         </div>
     );
