@@ -2,6 +2,15 @@
  * @fileoverview Page component
  * 
  * This is the main component of the application.
+ * 
+ * IDEAS/TODOs:
+ * - enable audio sources other than files (e.g. microphone, sc link, etc.)
+ * - come up with a cool name for the app
+ * - add a logo
+ * - add the ability to save the visualizations as videos
+ * - add components to alter the visualizations (e.g. color, shape, etc.)
+ *   they should be interactive and update in real time
+ * 
  */
 
 "use client"
@@ -15,7 +24,7 @@ import AudioVisualizerPage from './Components/AudioVisualizerPage/visualizer-pag
 export default function Home() {
   return (
     <main className={styles.main}>
-      <h1>audio vizzin</h1>
+      <h1>audio fractalizer</h1>
 
       <p className={styles.description}>
         {/* <code className={styles.code}>/src/app/page.js</code> */}

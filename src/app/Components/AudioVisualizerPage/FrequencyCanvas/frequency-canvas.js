@@ -28,7 +28,7 @@ const FrequencyCanvas = ( props ) => {
 
     const handleAudioPlay = () => {
         const audioContext = new AudioContext();
-        console.log("audioContext created");
+        console.log("audioContext created for FrequencyCanvas");
             if (!source.current) {
                 console.log("source.current not found, creating");
                 source.current = audioContext.createMediaElementSource(audioRef.current);
@@ -36,7 +36,7 @@ const FrequencyCanvas = ( props ) => {
                 source.current.connect(analyzer.current);
                 analyzer.current.connect(audioContext.destination);
             }
-            console.log("visualizeData() called");
+            console.log("visualizeData() called (FrequencyCanvas)");
             visualizeData();
         };
 

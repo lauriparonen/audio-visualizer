@@ -1,0 +1,87 @@
+.canvases {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+
+}
+
+.file-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    background: none;
+    font-size: 0.8rem;
+    color: #fff;
+    /* font-family: 'Montserrat', sans-serif; */
+    font-family: inherit;
+    font-weight: 300;
+    text-align: center;
+    letter-spacing: 0.1rem;
+    cursor: initial;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    padding: 0.5rem 0;
+    margin: 0;
+    border-bottom: 1px solid #fff;
+    margin-bottom: 1rem;
+
+    &:hover {
+        color: #000;
+        background: #cc80ffab;
+        &::before {
+            transform: translateX(0);
+        }
+    }
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: -1;
+        transform: translateX(-100%);
+        transition: all 0.3s ease;
+    }
+}
+
+audio::-webkit-file-upload-button {
+    display:none;
+}
+
+.freq-canvas-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0.5rem;
+
+    background: transparent;
+    /* Positioning */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* Animation */
+    transition: all 0.5s ease;
+    /* Box Shadow 
+    box-shadow: 0 0 5px rgba(var(--card-rgb), 0.5); */
+    /* Overflow */
+    overflow: hidden;
+}
+
+.shader-canvas-container {
+    width: 100%;
+    height: 100%;
+    
+    border-radius: 0.5rem;
+    border: 1px solid rgba(var(--card-border-rgb), 0.25);
+    
+}
