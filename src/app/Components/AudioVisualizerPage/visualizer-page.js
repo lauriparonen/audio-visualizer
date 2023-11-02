@@ -40,7 +40,12 @@ const AudioVisualizerPage = () => {
         accept="audio/*"
         onChange={onChangeFile}        
       />
-
+    <audio
+      ref={audioRef}
+      src={file && window.URL.createObjectURL(file)}
+      controls hidden
+    />
+    
       <div className="shader-canvas-container">
 
         {file && (
@@ -48,7 +53,7 @@ const AudioVisualizerPage = () => {
           file={file} 
           audioRef={audioRef}
           src={window.URL.createObjectURL(file)}
-          onChangeFile={onChangeFile}
+          //onChangeFile={onChangeFile}
           //onPlay={() => audioRef.current.play()}
           />
         )}
