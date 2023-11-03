@@ -1,26 +1,23 @@
 const fragmentShader = `
   varying vec2 vUv;
   uniform float u_time;
-  uniform float u_resolution;
+  uniform vec2 u_resolution;
   uniform sampler2D u_audioData;
-
-  //vec3 colorA = vec3(0.912,0.191,0.652);
-  //vec3 colorB = vec3(1.000,0.777,0.052);
+  
+  uniform vec3 colorA;
+  uniform vec3 colorB;
 
   void main() {
-    //vec2 normalizedPixel = gl_FragCoord.xy/600.0;
-    //vec3 color = mix(colorA, colorB, normalizedPixel.x);
 
-    //gl_FragColor = vec4(color,1.0);
+    // Get the frequency data at the current UV coordinates
+    //float frequency = texture2D(u_audioData, vUv).r;
 
-    float frequency = texture2D(u_audioData, vUv).r;
-    //float frequency = texture2D(u_audioData, vUv).g;
-    //float frequency = texture2D(u_audioData, vUv).b;
-    //float frequency = texture2D(u_audioData, vUv).a;
+    // Interpolate between colorA and colorB based on the frequency and the vertical position
+    //vec3 color = mix(colorA, colorB, vUv.y + frequency * 0.5);
 
-    gl_FragColor = vec4(frequency, frequency, frequency, 1.0);
-  }
-
+    //gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
 `;
 
 export default fragmentShader;
