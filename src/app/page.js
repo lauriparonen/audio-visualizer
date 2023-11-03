@@ -24,7 +24,7 @@ import AudioVisualizerPage from './Components/AudioVisualizerPage/visualizer-pag
 export default function Home() {
   return (
     <main className={styles.main}>
-      <h1>audio fractalizer</h1>
+      <h1>audio visualizer</h1>
 
       <p className={styles.description}>
         {/* <code className={styles.code}>/src/app/page.js</code> */}

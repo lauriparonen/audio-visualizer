@@ -3,15 +3,14 @@
  * 
  * TODOS:
  * - add more shapes
- * - code the fractal
  * - link the canvas to the audio DONE
- * - Render the canvas as the window is opened
+ * - Render the canvas as the window is opened ? maybe not
  * - Connect the shader uniforms and values to sliders and other inputs
  *      -> these will be a dropdown menu with a list of options
  * - add full screen button
  * 
  * ideas:
- * - use laminar flow in the visual's texture
+ * - use laminar flow in one visual's texture
  * 
  */
 
@@ -21,78 +20,8 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Box, OrbitControls, Points } from "@react-three/drei";
 extend({ Canvas, Box, OrbitControls, Points });
 
-import fragmentShader from "./fragment-shader";
-import vertexShader from "./vertex-shader";
-
 import * as THREE from "three";
 
-/**
- * Basic plane mesh with shader material
- * 
- * @param {*} param0 
- * @returns 
- */
-const VisualizerMesh = ({ material }) => {
-    /*
-    const meshRef = useRef(null);
-
-    useFrame(({ clock }) => {
-        if (meshRef.current) {
-            meshRef.current.material.uniforms.u_time.value = clock.getElapsedTime();
-        }
-    });
-    */
-   const pointsRef = useRef(null);
-
-   useEffect(() => {
-    if (pointsRef.current) {
-        const geometry = new THREE.SphereGeometry(1, 32, 32);
-
-        // Create a Float32Array of vertex indices
-        const vertexIndices = new Float32Array(geometry.getAttribute('position').count);
-
-        // Fill the array with the index of each vertex
-        for (let i = 0; i < vertexIndices.length; i++) {
-            vertexIndices[i] = i;
-        }
-
-        console.log('vertexIndices', vertexIndices);
-
-        // Add the vertexIndices as an attribute to the geometry
-        geometry.setAttribute('vertexIndex', new THREE.BufferAttribute(vertexIndices, 1));
-
-        pointsRef.current.geometry = geometry;
-    }
-}, []);
-
-useFrame(({ clock }) => {
-    if (pointsRef.current) {
-        pointsRef.current.material.uniforms.u_time.value = clock.getElapsedTime();
-    }
-});
-    
-
-    console.log('material', material);
-
-    return (
-        <Points ref={pointsRef} position={[0, 0, 0]}>
-        <sphereGeometry attach="geometry" args={[1, 32, 32]} />
-        <primitive attach="material" object={material} />
-    </Points>
-    );
-
-    /*
-    return (
-        <mesh ref={meshRef} position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} >
-            <sphereGeometry 
-                attach="geometry" 
-                args={[1, 32, 32]} 
-                />
-            <primitive attach="material" object={material} />
-        </mesh>
-    );
-    */
-};
 
 /**
  * @function PointsComponent
@@ -101,12 +30,21 @@ useFrame(({ clock }) => {
  * 
  * One of the visualizers
  * 
- * Renders a shape (currently a circle) with points as material 
+ * Renders a slowly rotating shape (currently a sphere) with points as material.
  * 
- * vertexShader2 and fragmentShader2 are the shaders for this component
+ * Initially, red points are evenly distributed across the surface of the sphere.
+ * 
+ * The points change position, size and color according to the audio data.
+ * 
+ * pointsVS and pointsFS are the shaders for this component
+ * 
+ * TODO:
+ * - there's an issue with the gain of the audio data;
+ *   sometimes it overflows and the audio becomes distorted
+ *   -> it needs to be normalized 
  */
 
-const vertexShader2 = `
+const pointsVS = `
 
     attribute float vertexIndex;
 
@@ -116,30 +54,75 @@ const vertexShader2 = `
 
 
     void main() {
+ 
 
+        // Play around with the vertexIndex to get different effects
+        // eg. when n at vec2(vertexIndex / n) is negative,
+        // the shape expands and shrinks in unison;
+        // when positive, the dots jump around individually according to the frequency data
+        float audioData = texture2D(u_audioData, vec2(vertexIndex / -2048.0, 0.5)).r;
+        // float audioData = texture2D(u_audioData, vec2(vertexIndex / 2048.0, 0.5)).r;
+
+        vec3 newPosition = position + normalize(position) * audioData * 0.6;
         
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 2.0 + sin(vertexIndex * 50.1);
-        gl_PointSize += sin(u_time * 2.0) * 2.0;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+
+        // This changes the size of the points with the sin of the vertexIndex
+        // resulting in a spiral effect across the sphere
+        gl_PointSize = sin(vertexIndex *0.6) * 3.0;
+
+        // and this causes the spiral to appear only when the audio is playing
+        gl_PointSize *= sin(audioData * 1.01) * 1.5; // edit the coefficient to change sensitivity
+
+        //gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        //gl_PointSize = 2.0 + sin(vertexIndex * 50.1);
+        //gl_PointSize += sin(u_time * 2.0) * 2.0;
     }
 `;
 
-const fragmentShader2 = `
+const pointsFS = `
 
     uniform float u_time;
     uniform vec2 u_resolution;
     uniform sampler2D u_audioData;
 
     void main() {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // red color
+        vec3 color1 = vec3(1.0, 0.0, 0.0);
+        vec3 color2 = vec3(0.0, 0.654, 0.0);
+
+        //float audioData = texture2D(u_audioData, vec2(gl_PointCoord.x, 0.5)).r;
+        float audioData = texture2D(u_audioData, vec2(gl_PointCoord.x, 0.5)).r;
+
+        vec3 color = mix(color1, color2, audioData);
+
+        gl_FragColor = vec4(color, 1.0);
+        gl_FragColor += abs(sin(audioData * 2.0) * 1.2); // alter the colors per the audio data
+        //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // red color
     }
 `;
 
-const PointsComponent = () => {    
+const PointsComponent = ({ audioRef }) => {    
     const meshRef = useRef();
+
+    const audioAnalyzer = useMemo(() => {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioSource = audioContext.createMediaElementSource(audioRef.current);
+        const audioAnalyzer = audioContext.createAnalyser();
+        const gainNode = audioContext.createGain();
+        audioSource.connect(audioAnalyzer);
+        audioSource.connect(audioContext.destination);
+        audioSource.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        gainNode.gain.value = 0.5;
+        return audioAnalyzer;
+    }, [audioRef]);
+
+    const frequencyData = useMemo(() => new Uint8Array(audioAnalyzer.frequencyBinCount), [audioAnalyzer]);
   
     const geometry = useMemo(() => {
-        const geometry = new THREE.SphereGeometry(1, 32, 32);
+        // edit the number of points w the last two args of the SphereGeometry constructor
+        // (the first is the radius, the last two are width and height segments)
+        const geometry = new THREE.SphereGeometry(1, 64, 64); 
         const vertexIndices = [...Array(geometry.getAttribute('position').count).keys()];
         geometry.setAttribute('vertexIndex', new THREE.Float32BufferAttribute(vertexIndices, 1));
         return geometry;
@@ -153,12 +136,24 @@ const PointsComponent = () => {
 
     useFrame(({ clock, size }) => {
         if (meshRef.current) {
-            meshRef.current.rotation.x += 0.0001;
-            meshRef.current.rotation.y += 0.0001;
+            //meshRef.current.rotation.x += 0.001;
+            meshRef.current.rotation.y += 0.001;
         }
+
+        audioAnalyzer.getByteFrequencyData(frequencyData);
+        const dataTexture = new THREE.DataTexture(
+            frequencyData,
+            frequencyData.length,
+            1,
+            THREE.RedFormat,
+            THREE.UnsignedByteType,
+            THREE.UnsignedByteType
+        );
+        dataTexture.needsUpdate = true;
 
         uniforms.u_time.value = clock.getElapsedTime();
         uniforms.u_resolution.value.set(size.width, size.height);
+        uniforms.u_audioData.value = dataTexture;
     });
 
   
@@ -168,8 +163,8 @@ const PointsComponent = () => {
         <shaderMaterial 
             attach="material" 
             args={[{ uniforms }]}
-            vertexShader={vertexShader2} 
-            fragmentShader={fragmentShader2}
+            vertexShader={pointsVS} 
+            fragmentShader={pointsFS}
 
              
         />
@@ -186,68 +181,7 @@ const PointsComponent = () => {
  * @returns the main visualizer component
  */
 const FractalVisualizer = (props) => {
-    const { audioRef, src, file } = props;
-    const [material, setMaterial] = useState(null);
-
-    console.log('audioRef', audioRef);
-    console.log('src', src);
-    console.log('file', file);
-
-    useEffect(() => {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const audioSource = audioContext.createMediaElementSource(audioRef.current);
-        const audioAnalyzer = audioContext.createAnalyser();
-        audioSource.connect(audioAnalyzer);
-        audioSource.connect(audioContext.destination);
-
-        const frequencyData = new Uint8Array(audioAnalyzer.frequencyBinCount);
-        //audioAnalyzer.getByteFrequencyData(frequencyData);
-
-        //console.log('frequencyData', frequencyData);
-
-        const uniforms = {
-            u_time: { value: 1.0 },
-            u_resolution: { value: new THREE.Vector2() },
-            u_audioData: { value: null }, // init as null, will be updated later
-            //colorA: { value: new THREE.Color(0x912, 0.191, 0.652) },
-            //colorB: { value: new THREE.Color(0x100, 0.777, 0.052) },
-            colorA: { value: new THREE.Color(0x7303c0) },
-            colorB: { value: new THREE.Color(0xfdeff9) },
-
-        };
-
-        const material = new THREE.ShaderMaterial({
-            fragmentShader: fragmentShader,
-            vertexShader: vertexShader,
-            uniforms: uniforms,
-        });
-
-        setMaterial(material);
-
-        const updateFrequencyData = () => {
-            audioAnalyzer.getByteFrequencyData(frequencyData);
-            //console.log('frequencyData', frequencyData);
-
-            const dataTexture = new THREE.DataTexture(
-                frequencyData,
-                frequencyData.length,
-                1,
-                THREE.RedFormat, // use RedFormat instead of LuminanceFormat
-                THREE.UnsignedByteType,
-                THREE.UnsignedByteType
-            );
-
-            dataTexture.needsUpdate = true;
-            material.uniforms.u_audioData.value = dataTexture; // update the material's uniform
-
-            requestAnimationFrame(updateFrequencyData);
-        };
-
-        updateFrequencyData();
-        
-    }, [audioRef, src, file]);
-
-
+    const { audioRef, src } = props;
 
     return (
         <div className="fractal-visualizer">
@@ -255,7 +189,7 @@ const FractalVisualizer = (props) => {
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
                 {/* <VisualizerMesh material={material} /> */}
-                <PointsComponent />
+                <PointsComponent audioRef={audioRef} />
                 <OrbitControls />
             </Canvas>
             <audio src={src} ref={audioRef} />
