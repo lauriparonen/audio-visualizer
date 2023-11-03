@@ -86,9 +86,12 @@ const pointsFS = `
     uniform vec2 u_resolution;
     uniform sampler2D u_audioData;
 
+    uniform vec3 color1;
+    uniform vec3 color2;
+
     void main() {
-        vec3 color1 = vec3(1.0, 0.0, 0.0);
-        vec3 color2 = vec3(0.0, 0.654, 0.0);
+        //vec3 color1 = vec3(1.0, 0.0, 0.0);
+        //vec3 color2 = vec3(0.0, 0.654, 0.0);
 
         //float audioData = texture2D(u_audioData, vec2(gl_PointCoord.x, 0.5)).r;
         float audioData = texture2D(u_audioData, vec2(gl_PointCoord.x, 0.5)).r;
@@ -101,20 +104,28 @@ const pointsFS = `
     }
 `;
 
-const PointsComponent = ({ audioRef }) => {    
+const PointsComponent = ({ audioRef, color1, color2 }) => {    
+
+
+
     const meshRef = useRef();
 
     const audioAnalyzer = useMemo(() => {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const audioSource = audioContext.createMediaElementSource(audioRef.current);
         const audioAnalyzer = audioContext.createAnalyser();
+
         const gainNode = audioContext.createGain();
+
         audioSource.connect(audioAnalyzer);
         audioSource.connect(audioContext.destination);
         audioSource.connect(gainNode);
+
         gainNode.connect(audioContext.destination);
         gainNode.gain.value = 0.5;
+
         return audioAnalyzer;
+
     }, [audioRef]);
 
     const frequencyData = useMemo(() => new Uint8Array(audioAnalyzer.frequencyBinCount), [audioAnalyzer]);
@@ -132,7 +143,9 @@ const PointsComponent = ({ audioRef }) => {
         u_time: { value: 0 },
         u_resolution: { value: new THREE.Vector2() },
         u_audioData: { value: null },
-    }), []);
+        color1: { value: new THREE.Vector3(...color1) },
+        color2: { value: new THREE.Vector3(...color2) },
+    }), [color1, color2]);
 
     useFrame(({ clock, size }) => {
         if (meshRef.current) {
@@ -182,6 +195,8 @@ const PointsComponent = ({ audioRef }) => {
  */
 const FractalVisualizer = (props) => {
     const { audioRef, src } = props;
+    const [color1, setColor1] = useState([1.0, 0.0, 0.0]);
+    const [color2, setColor2] = useState([0.0, 0.654, 0.0]);
 
     return (
         <div className="fractal-visualizer">
@@ -189,10 +204,15 @@ const FractalVisualizer = (props) => {
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
                 {/* <VisualizerMesh material={material} /> */}
-                <PointsComponent audioRef={audioRef} />
+                <PointsComponent 
+                    audioRef={audioRef} 
+                    color1={color1}
+                    color2={color2}
+                    />
                 <OrbitControls />
             </Canvas>
             <audio src={src} ref={audioRef} />
+
         </div>
        
     );

@@ -17,6 +17,9 @@ import ShaderCanvas from './ShaderCanvas/shader-canvas';
 import styles from './styles.css';
 
 const AudioVisualizerPage = () => {
+
+  const [selectedVisualizer, setSelectedVisualizer] = useState('ShaderCanvas');
+  
   const [file, setFile] = useState(null);
 
   const onChangeFile = (e) => {
@@ -34,6 +37,13 @@ const AudioVisualizerPage = () => {
   // When a file is selected, pass it to both canvases
   return (
     <div className='canvases'>
+      <select className='visualizer-select'
+              value={selectedVisualizer} 
+              onChange={(e) => setSelectedVisualizer(e.target.value)}>
+        <option value="ShaderCanvas">spiral particle sphere</option>
+        <option value="FrequencyCanvas">Frequency Canvas</option>
+        {/* more canvases as they finish */}
+      </select>
       <input
         className='file-input'
         type="file"
@@ -48,7 +58,7 @@ const AudioVisualizerPage = () => {
     
       <div className="shader-canvas-container">
 
-        {file && (
+        {file && selectedVisualizer === 'ShaderCanvas' && (
         <ShaderCanvas 
           file={file} 
           audioRef={audioRef}
@@ -60,7 +70,7 @@ const AudioVisualizerPage = () => {
       </div>
 
       <div className="freq-canvas-container">
-      {file && (
+      {file &&  (
         <FrequencyCanvas 
           file={file} 
           audioRef={audioRef}
