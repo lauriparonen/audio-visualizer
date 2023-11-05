@@ -21,10 +21,15 @@ import FrequencyCanvas from './Components/AudioVisualizerPage/FrequencyCanvas/fr
 import ShaderCanvas from './Components/AudioVisualizerPage/ShaderCanvas/shader-canvas.js'
 import AudioVisualizerPage from './Components/AudioVisualizerPage/visualizer-page'
 
+import HeaderText from './Components/HeaderText'
+
+
 export default function Home() {
+
   return (
     <main className={styles.main}>
-      <h1>audio visualizer</h1>
+       <h1>audio visualizer 🔮</h1>
+       {/* / <HeaderText />   */}
 
       <p className={styles.description}>
         {/* <code className={styles.code}>/src/app/page.js</code> */}

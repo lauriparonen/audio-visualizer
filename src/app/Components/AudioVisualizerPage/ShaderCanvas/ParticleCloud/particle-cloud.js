@@ -1,18 +1,4 @@
-/**
- * @fileoverview fractal-visualizer.js - fractal visualizer component
- * 
- * TODOS:
- * - add more shapes
- * - link the canvas to the audio DONE
- * - Render the canvas as the window is opened ? maybe not
- * - Connect the shader uniforms and values to sliders and other inputs
- *      -> these will be a dropdown menu with a list of options
- * - add full screen button
- * 
- * ideas:
- * - use laminar flow in one visual's texture
- * 
- */
+
 
 import React, { useRef, useEffect, useMemo, useState } from "react";
 import { extend } from "@react-three/fiber";
@@ -22,29 +8,17 @@ extend({ Canvas, Box, OrbitControls, Points });
 
 import * as THREE from "three";
 
+import { createNoise3D } from "simplex-noise";
 
 /**
  * @function PointsComponent
  * 
- * WIP
+ * Renders a cloud of particles that change position, size and color according to the audio data.
  * 
- * One of the visualizers
  * 
- * Renders a slowly rotating shape (currently a sphere) with points as material.
- * 
- * Initially, red points are evenly distributed across the surface of the sphere.
- * 
- * The points change position, size and color according to the audio data.
- * 
- * pointsVS and pointsFS are the shaders for this component
- * 
- * TODO:
- * - there's an issue with the gain of the audio data;
- *   sometimes it overflows and the audio becomes distorted
- *   -> it needs to be normalized 
  */
 
-const pointsVS = `
+const particleCloudVS = `
 
     attribute float vertexIndex;
 
@@ -80,7 +54,7 @@ const pointsVS = `
     }
 `;
 
-const pointsFS = `
+const particleCloudFS = `
 
     uniform float u_time;
     uniform vec2 u_resolution;
@@ -104,9 +78,7 @@ const pointsFS = `
     }
 `;
 
-const PointsComponent = ({ audioRef, color1, color2 }) => {    
-
-
+const ParticleComponent = ({ audioRef, color1, color2 }) => {    
 
     const meshRef = useRef();
 
@@ -131,13 +103,74 @@ const PointsComponent = ({ audioRef, color1, color2 }) => {
     const frequencyData = useMemo(() => new Uint8Array(audioAnalyzer.frequencyBinCount), [audioAnalyzer]);
   
     const geometry = useMemo(() => {
-        // edit the number of points w the last two args of the SphereGeometry constructor
-        // (the first is the radius, the last two are width and height segments)
-        const geometry = new THREE.SphereGeometry(1, 64, 64); 
-        const vertexIndices = [...Array(geometry.getAttribute('position').count).keys()];
-        geometry.setAttribute('vertexIndex', new THREE.Float32BufferAttribute(vertexIndices, 1));
+       
+        const geometry = new THREE.BufferGeometry(); 
+        const count = 8000; // number of particles
+        const positions = new Float32Array(count * 3); // Multiply by 3 for x, y, z coordinates
+        const vertexIndices = new Float32Array(count);
+
+        for (let i = 0; i < count; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 10; // Randomly distribute particles in x
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 10; // Randomly distribute particles in y
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 10; // Randomly distribute particles in z
+            vertexIndices[i] = i;
+          }
+        
+          geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+          geometry.setAttribute('vertexIndex', new THREE.BufferAttribute(vertexIndices, 1));
+        
+          return geometry;
+        }, []);
+
+        /* simplex noise for more natural distribution of particles 
+        const noise3D = createNoise3D();
+
+        for (let i = 0; i < count; i++) {
+            const noise = noise3D(i / 100, i / 100, i / 100);
+        
+            positions[i * 3] = (Math.random() * 3 - 1 + noise) * 10; 
+            positions[i * 3 + 1] = (Math.random() * 3 - 0.5 + noise) * 10;
+            positions[i * 3 + 2] = (Math.random() * 3 - 0.5 + noise) * 20;
+            vertexIndices[i] = i;
+          }
+        
+          geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+          geometry.setAttribute('vertexIndex', new THREE.BufferAttribute(vertexIndices, 1));
+        
+          return geometry;
+        }, []);
+        */
+        
+        /*
+        // this is for making a sierpinski triangle for later use
+        const vertices = [
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(10, 20, 0),
+            new THREE.Vector3(15, 0, 10),
+
+        ];
+
+        let currentPos = new THREE.Vector3(0, 0, 0);
+
+        for (let i = 0; i < count; i++) {
+            // choose a random vertex
+            const vertex = vertices[Math.floor(Math.random() * vertices.length)];
+
+            // move halfway to the chosen vertex
+            currentPos.addVectors(currentPos, vertex).divideScalar(2);
+
+            positions[i * 3] = currentPos.x;
+            positions[i * 3 + 1] = currentPos.y;
+            positions[i * 3 + 2] = currentPos.z;
+            vertexIndices[i] = i;
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('vertexIndex', new THREE.BufferAttribute(vertexIndices, 1));
+
         return geometry;
-    }, []);
+        */
+
 
     const uniforms = useMemo(() => ({
         u_time: { value: 0 },
@@ -149,7 +182,7 @@ const PointsComponent = ({ audioRef, color1, color2 }) => {
 
     useFrame(({ clock, size }) => {
         if (meshRef.current) {
-            //meshRef.current.rotation.x += 0.001;
+            meshRef.current.rotation.x += 0.0001;
             meshRef.current.rotation.y += 0.001;
         }
 
@@ -162,11 +195,14 @@ const PointsComponent = ({ audioRef, color1, color2 }) => {
             THREE.UnsignedByteType,
             THREE.UnsignedByteType
         );
+
         dataTexture.needsUpdate = true;
 
         uniforms.u_time.value = clock.getElapsedTime();
         uniforms.u_resolution.value.set(size.width, size.height);
         uniforms.u_audioData.value = dataTexture;
+
+        //dataTexture.dispose();
     });
 
   
@@ -176,8 +212,8 @@ const PointsComponent = ({ audioRef, color1, color2 }) => {
         <shaderMaterial 
             attach="material" 
             args={[{ uniforms }]}
-            vertexShader={pointsVS} 
-            fragmentShader={pointsFS}
+            vertexShader={particleCloudVS} 
+            fragmentShader={particleCloudFS}
 
              
         />
@@ -187,29 +223,34 @@ const PointsComponent = ({ audioRef, color1, color2 }) => {
 
 
 /**
- * @function FractalVisualizer
- * Handles the audio analysis and shader material.
+ * @function ParticleCloud
  * 
  * @param {*} props the audioRef, src, and file props fom the parent component (VisualizerPage)
  * @returns the main visualizer component
  */
-const FractalVisualizer = (props) => {
+const ParticleCloud = (props) => {
     const { audioRef, src } = props;
-    const [color1, setColor1] = useState([1.0, 0.0, 0.0]);
-    const [color2, setColor2] = useState([0.0, 0.654, 0.0]);
+    const [color1, setColor1] = useState([0.0, 0.0, 1.0]);
+    const [color2, setColor2] = useState([1.0, 0.0, 0.0]);
 
     return (
-        <div className="fractal-visualizer">
+        <div className="point-sphere">
             <Canvas camera={{ position: [1.0, 1.5, 1.0]}}>
                 <ambientLight />
                 <pointLight position={[10, 10, 10]} />
                 {/* <VisualizerMesh material={material} /> */}
-                <PointsComponent 
+                <ParticleComponent 
                     audioRef={audioRef} 
                     color1={color1}
                     color2={color2}
                     />
-                <OrbitControls />
+                <OrbitControls
+                    enablePan={true}
+                    enableZoom={true}
+                    enableRotate={true}
+                    minDistance={1} // start from 1
+                    maxDistance={6} // keep the camera inside the cube
+                    />
             </Canvas>
             <audio src={src} ref={audioRef} />
 
@@ -219,4 +260,4 @@ const FractalVisualizer = (props) => {
 
 };
 
-export default FractalVisualizer;
+export default ParticleCloud;

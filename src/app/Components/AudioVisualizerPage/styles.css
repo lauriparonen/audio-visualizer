@@ -17,6 +17,11 @@
     align-items: center;
     padding: 1rem;
     background-color: transparent;
+    border-radius: 0.5rem;
+    border: none;
+    outline: none;
+    font-size: 0.8rem;
+    cursor: pointer;
 
     &:hover {
         color: #8d6fdf;
@@ -25,11 +30,38 @@
             transform: translateX(0);
         }
     }
+
+
+}
+
+.visualizer-select option {
+    background-color: #000;
+    color: #fff;
+    font-size: 0.8rem;
+    font-family: inherit;
+    font-weight: 300;
+    text-align: center;
+    letter-spacing: 0.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    padding: 0.5rem 0;
+    margin: 0;
+
+    &:hover {
+        color: #aa6a6a;
+        background: #000000ab;
+        &::before {
+            transform: translateX(0);
+        }
+    }
+
 }
 
 .file-input {
-    width: 100%;
-    height: 100%;
+
     border: none;
     outline: none;
     background: none;
@@ -51,8 +83,8 @@
     margin-bottom: 1rem;
 
     &:hover {
-        color: #000;
-        background: #cc80ffab;
+        color: #aa6a6a;
+        background: #000000ab;
         &::before {
             transform: translateX(0);
         }
