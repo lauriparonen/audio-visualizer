@@ -3,18 +3,18 @@ A collection of 3D audio visualizers, made with react-three & GLSL.
 Asks the user to input an audio file, and loads the selected visualizer. 
 The figure is animated by the audio's frequency data, fed into its shader code as a three.js data texture uniform.
 
-## Visualizers:
-# Particle sphere
+# Visualizers:
+## Particle sphere
 - sphere with particles as mesh material
 - changes the color and size of the particles based on the frequency data to form a spiral pattern
 - orbit controls on; camera position alterable via mouse -> user can go inside the sphere as well
 
-# Particle cloud
+## Particle cloud
 - a cube of randomly distributed particles
 - particles change position and color based on the frequency data
 - orbit controls on but limited so the camera stays within the cube
 
-# Basic 2D frequency visualizer
+## Basic 2D frequency visualizer
 - always visible underneath the audio controls
 - displays the FFT of the audio with bars
 
