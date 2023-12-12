@@ -1,3 +1,34 @@
+A collection of 3D audio visualizers, made with react-three & GLSL.
+
+Asks the user to input an audio file, and loads the selected visualizer. 
+The figure is animated by the audio's frequency data, fed into its shader code as a three.js data texture uniform.
+
+## Visualizers:
+# Particle sphere
+- sphere with particles as mesh material
+- changes the color and size of the particles based on the frequency data to form a spiral pattern
+- orbit controls on; camera position alterable via mouse -> user can go inside the sphere as well
+
+# Particle cloud
+- a cube of randomly distributed particles
+- particles change position and color based on the frequency data
+- orbit controls on but limited so the camera stays within the cube
+
+# Basic 2D frequency visualizer
+- always visible underneath the audio controls
+- displays the FFT of the audio with bars
+
+More to be implemented 
+
+Problems:
+- Three.WebGL renderer loses context after changing the visualizer from the dropdown menu
+- Need to reconfigure audio context logic; occasional gain feedback loops happen
+
+Future feature ideas:
+- Currently only accepts audio file input, plan is to include support for SoundCloud songs via their api
+- Using Dat GUI for customizing the visualizers
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
