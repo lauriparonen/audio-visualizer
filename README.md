@@ -1,5 +1,8 @@
 A collection of 3D audio visualizers, made with react-three & GLSL. 
-*This turned out kind of clusterfucky so I am continuing it at https://github.com/lauriparonen/threejs-exploration with vanilla three.js 
+
+* This turned out kind of clusterfucky so I am continuing it at https://github.com/lauriparonen/threejs-exploration with vanilla three.js 
+
+---
 
 Asks the user to input an audio file, and loads the selected visualizer. 
 The figure is animated by the audio's frequency data, fed into its shader code as a three.js data texture uniform.
