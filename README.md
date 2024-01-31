@@ -8,6 +8,8 @@ The figure is animated by the audio's frequency data, fed into its shader code a
 - sphere with particles as mesh material
 - changes the color and size of the particles based on the frequency data to form a spiral pattern
 - orbit controls on; camera position alterable via mouse -> user can go inside the sphere as well
+![image](https://github.com/lauriparonen/audio-visualizer/assets/91259800/dfcad3a4-d050-435c-a871-4bfe1a0aadc6)
+
 
 ## Particle cloud
 - a cube of randomly distributed particles
